@@ -1,0 +1,43 @@
+# $Id$
+# Maintainer: Chupligin Sergey (NeoChapay) <neochapay@gmail.com>
+
+_host="github.com"
+_project=nemomobile-ux
+_basename=glacier-packagemanager
+_branch=master
+
+_gitname=$_basename
+pkgname=$_basename-git
+
+pkgver=0.3.r0.gc62dfa5
+pkgrel=1
+pkgdesc="Glacier package manager"
+arch=('x86_64' 'aarch64')
+url="https://$_host/$_project/$_gitname#branch=$_branch"
+license=('LGPL-2.1')
+depends=('libpamac' 'qt5-glacier-app-git')
+makedepends=('git' 'cmake' 'qt5-tools')
+provides=("${pkgname%-git}")
+conflicts=("${pkgname%-git}")
+source=("${pkgname}::git+${url}")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "${srcdir}/${pkgname}"
+  ( set -o pipefail
+    git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g' ||
+    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+  ) 2>/dev/null
+}
+
+build() {
+    cmake \
+        -B "${pkgname}/build" \
+        -S "${pkgname}" \
+        -DCMAKE_INSTALL_PREFIX:PATH='/usr'
+    make -C "${pkgname}/build" all
+}
+
+package() {
+    make -C "${srcdir}/${pkgname}/build" DESTDIR="$pkgdir" install
+}
