@@ -1,43 +1,27 @@
 # $Id$
 # Maintainer: Chupligin Sergey (NeoChapay) <neochapay@gmail.com>
 
-_host="github.com"
-_project=nemomobile-ux
-_basename=glacier-packagemanager
-_branch=master
-
-_gitname=$_basename
-pkgname=$_basename-git
-
-pkgver=0.4.r10.g1824405
+pkgname=glacier-packagemanager
+pkgver=0.4.1
 pkgrel=1
 pkgdesc="Glacier package manager"
 arch=('x86_64' 'aarch64')
-url="https://$_host/$_project/$_gitname#branch=$_branch"
+url="https://github.com/nemomobile-ux/glacier-packagemanager"
 license=('LGPL-2.1')
-depends=('libpamac' 'qt5-glacier-app-git')
-makedepends=('git' 'cmake' 'qt5-tools')
-provides=("${pkgname%-git}")
-conflicts=("${pkgname%-git}")
-source=("${pkgname}::git+${url}")
-sha256sums=('SKIP')
-
-pkgver() {
-  cd "${srcdir}/${pkgname}"
-  ( set -o pipefail
-    git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g' ||
-    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
-  ) 2>/dev/null
-}
+depends=('libpamac' 'qt5-glacier-app')
+makedepends=( 'cmake' 'qt5-tools')
+source=("${url}/archive/refs/tags/$pkgver.tar.gz")
+sha256sums=('c506d09ab444263a90bc9ac96b0d048e4a0835c981149afcafa4a28e2e788fc2')
 
 build() {
+    cd $pkgname-$pkgver
     cmake \
-        -B "${pkgname}/build" \
-        -S "${pkgname}" \
         -DCMAKE_INSTALL_PREFIX:PATH='/usr'
-    make -C "${pkgname}/build" all
+    make all
 }
 
+
 package() {
-    make -C "${srcdir}/${pkgname}/build" DESTDIR="$pkgdir" install
+    cd $pkgname-$pkgver
+    make DESTDIR="$pkgdir" install
 }
